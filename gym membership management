@@ -1,0 +1,167 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+typedef struct {
+    int id;
+    char name[50];
+    int age;
+    char membershipType[20];
+} Member;
+
+void addMember();
+void viewMembers();
+void searchMember();
+void deleteMember();
+void updateMember();
+
+int main() {
+    int choice;
+
+    while (1) {
+        printf("\n====== GYM MEMBERSHIP MANAGEMENT ======\n");
+        printf("1. Add Member\n");
+        printf("2. View All Members\n");
+        printf("3. Search Member\n");
+        printf("4. Update Member\n");
+        printf("5. Delete Member\n");
+        printf("6. Exit\n");
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+            case 1: addMember(); break;
+            case 2: viewMembers(); break;
+            case 3: searchMember(); break;
+            case 4: updateMember(); break;
+            case 5: deleteMember(); break;
+            case 6: exit(0);
+            default: printf("Invalid choice! Try again.\n");
+        }
+    }
+}
+
+// Add a new member
+void addMember() {
+    Member m;
+    FILE *fp = fopen("members.dat", "ab");
+
+    printf("\nEnter Member ID: ");
+    scanf("%d", &m.id);
+    printf("Enter Name: ");
+    scanf("%s", m.name);
+    printf("Enter Age: ");
+    scanf("%d", &m.age);
+    printf("Enter Membership Type: ");
+    scanf("%s", m.membershipType);
+
+    fwrite(&m, sizeof(Member), 1, fp);
+    fclose(fp);
+
+    printf("\nMember added successfully!\n");
+}
+
+// View all members
+void viewMembers() {
+    Member m;
+    FILE *fp = fopen("members.dat", "rb");
+
+    if (!fp) {
+        printf("No records found.\n");
+        return;
+    }
+
+    printf("\n==== MEMBER LIST ====\n");
+    while (fread(&m, sizeof(Member), 1, fp)) {
+        printf("ID: %d | Name: %s | Age: %d | Type: %s\n",
+               m.id, m.name, m.age, m.membershipType);
+    }
+    fclose(fp);
+}
+
+// Search for a member by ID
+void searchMember() {
+    Member m;
+    int id, found = 0;
+    FILE *fp = fopen("members.dat", "rb");
+
+    printf("\nEnter Member ID to Search: ");
+    scanf("%d", &id);
+
+    while (fread(&m, sizeof(Member), 1, fp)) {
+        if (m.id == id) {
+            printf("\nMember Found!\n");
+            printf("ID: %d | Name: %s | Age: %d | Type: %s\n",
+                   m.id, m.name, m.age, m.membershipType);
+            found = 1;
+            break;
+        }
+    }
+    fclose(fp);
+
+    if (!found)
+        printf("Member not found.\n");
+}
+
+// Update existing member
+void updateMember() {
+    Member m;
+    int id, found = 0;
+    FILE *fp = fopen("members.dat", "rb");
+    FILE *temp = fopen("temp.dat", "wb");
+
+    printf("\nEnter Member ID to Update: ");
+    scanf("%d", &id);
+
+    while (fread(&m, sizeof(Member), 1, fp)) {
+        if (m.id == id) {
+            found = 1;
+            printf("Enter new Name: ");
+            scanf("%s", m.name);
+            printf("Enter new Age: ");
+            scanf("%d", &m.age);
+            printf("Enter new Membership Type: ");
+            scanf("%s", m.membershipType);
+        }
+        fwrite(&m, sizeof(Member), 1, temp);
+    }
+
+    fclose(fp);
+    fclose(temp);
+    remove("members.dat");
+    rename("temp.dat", "members.dat");
+
+    if (found)
+        printf("Member updated successfully.\n");
+    else
+        printf("Member not found.\n");
+}
+
+// Delete member
+void deleteMember() {
+    Member m;
+    int id, found = 0;
+    FILE *fp = fopen("members.dat", "rb");
+    FILE *temp = fopen("temp.dat", "wb");
+
+    printf("\nEnter Member ID to Delete: ");
+    scanf("%d", &id);
+
+    while (fread(&m, sizeof(Member), 1, fp)) {
+        if (m.id != id) {
+            fwrite(&m, sizeof(Member), 1, temp);
+        } else {
+            found = 1;
+        }
+    }
+
+    fclose(fp);
+    fclose(temp);
+    remove("members.dat");
+    rename("temp.dat", "members.dat");
+
+    if (found)
+        printf("Member deleted successfully.\n");
+    else
+        printf("Member not found.\n");
+}
