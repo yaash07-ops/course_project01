@@ -54,11 +54,11 @@ Required header files:
 
 stdio.h
 
-stdlib.h
+
 
 string.h
 
-File Handling
+
 
 Requires Read/Write permissions
 
